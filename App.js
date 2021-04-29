@@ -6,60 +6,8 @@ import { Button } from 'react-native-elements';
 import TaskList from './components/task-list';
 import ButtonAddTask from './components/button-add-task';
 import MenuTask from './components/menu-task';
-import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
-
-
-const list = [
-  {
-    id:0,
-    task: 'Dormir',
-    statut : "En cours"
-  },
-  {
-    id:1,
-    task: 'Se réveiller',
-    statut : "En cours"
-  },
-  {
-    id:2,
-    task: 'Se lever',
-    statut : "En cours"
-  },
-  {
-    id:3,
-    task: 'Manger',
-    statut : "En cours"
-  },
-  {
-    id:4,
-    task: 'Se brosser les dents',
-    statut : "En cours"
-  },
-  {
-    id:5,
-    task: 'Se doucher',
-    statut : "En cours"
-  },
-  {
-    id:6,
-    task: 'Repasser',
-    statut : "En cours"
-  },{
-    id:7,
-    task: 'Se préparer',
-    statut : "En cours"
-  },{
-    id:8,
-    task: 'Marcher',
-    statut : "En cours"
-  },
-  {
-    id:9,
-    task: 'Arriver',
-    statut : "En cours"
-  },
-];
-
+import AddTask from './components/add-task';
+import TASK from './components/model';
 
 export default class App extends React.Component {
 
@@ -71,9 +19,11 @@ export default class App extends React.Component {
     {
       myText:"Un texte par défaut",
       nbClick:0,
-      list:list,
+      list:[],
       isModalVisible:false,
-      currentTask:{}
+      currentTask:{},
+      promptVisible:false,
+      idGenerator:0
     }
 
   }
@@ -99,20 +49,55 @@ export default class App extends React.Component {
   }
 
   displayMenuTask = (item) => {
+
     console.log('je suis dans le callback')
+
     console.log(item)
+
     this.setState({ isModalVisible:true,currentTask:item});
+
   }
 
   deleteCurrentTask = () => {
+
     console.log(this.state.currentTask);
+
     const newDataTaskList = this.state.list.filter(Element=>Element.id!=this.state.currentTask.id)
+
     console.log(newDataTaskList)
+
     this.setState({list:newDataTaskList,isModalVisible:false,currentTask:{}});
+
   };
 
   changeStatusCurrentTask = () => {
-    console.log("changer statut");
+
+    // if le statut actuel = done Statut alors il passe alors il passe a todoStatus
+
+    const updatedStatus = (this.state.currentTask.statut === TASK.doneStatus) ? TASK.todoStatus : TASK.doneStatus;
+
+    // console.log(updatedStatus);
+
+    const updatedTask = this.state.currentTask;
+
+    updatedTask.statut = updatedStatus;
+
+    // recuperer l'index
+
+    const index = lodash.findIndex(this.state.list, {
+
+      id: this.state.currentTask.id
+
+    });
+
+    console.log(index);
+
+    const updatedTaskList = this.state.list;
+
+    updatedTaskList[index] = updatedTask;
+
+    this.setState({list:updatedTaskList,isModalVisible:false});
+
   }
 
   hideModal = () => {
@@ -121,8 +106,64 @@ export default class App extends React.Component {
 
   }
 
-  onSwipeLeft(gestureState) {
-    console.log("je swipe")
+  togglePrompt = () => {
+
+    console.log('toggle');
+
+    this.setState({promptVisible:!this.state.promptVisible});
+    
+  }
+
+  addNewTask = (value) => {
+
+    //console.log(value)
+
+    const tache = {
+      id: this.state.idGenerator,
+      task: value,
+      statut: TASK.todoStatus
+    }
+
+    //console.log(tache)
+
+    this.setState({ list: [...this.state.list,tache],idGenerator:this.state.idGenerator+1,promptVisible:!this.state.promptVisible})
+
+  }
+
+  filterAllTask = () => {
+
+    console.log('all')
+
+    this.state.list
+
+    console.log(this.state.list)
+
+  }
+
+  filterToDoTask = () => {
+    console.log('todo')
+
+    console.log(this.state.currentTask);
+
+    const newDataTaskList = this.state.list.filter(Element=>Element.statut===TASK.todoStatus)
+
+    console.log(newDataTaskList)
+
+    this.setState({list:newDataTaskList,isModalVisible:false,currentTask:{}});
+
+  }
+
+  filterDoneTask = () => {
+
+    console.log('done')
+
+    console.log(this.state.currentTask);
+
+    const newDataTaskList = this.state.list.filter(Element=>Element.statut===TASK.doneStatus)
+
+    console.log(newDataTaskList)
+
+    this.setState({list:newDataTaskList,isModalVisible:false,currentTask:{}});
   }
 
   render() {
@@ -134,30 +175,57 @@ export default class App extends React.Component {
             <Header content="Liste des tâches"/>
 
             <Button
+
             title={this.state.myText}
+
             onPress={this.onPressButton}
+
             />
 
-            <Text>Nombre de clics : {this.state.nbClick}</Text>
+            {/* <Text>Nombre de clics : {this.state.nbClick}</Text> */}
+            <ScrollView>
 
-            <MenuTask 
-            content={this.state.currentTask.task} 
-            isVisible={this.state.isModalVisible} 
-            onDisappearCallBack={this.hideModal}
-            onDeleteCallback={this.deleteCurrentTask} 
-            onChangeStatusCallback={this.changeStatusCurrentTask} 
-            />
-
-              <ScrollView>
-
+              
                 <TaskList 
+
                 onPressCallBack={this.displayMenuTask} 
+
                 DataTasks={this.state.list}
+
+                onPressAllTaskCallBack={this.filterAllTask}
+
+                onPressToDoTaskCallBack={this.filterToDoTask}
+
+                onPressDoneTaskCallBack={this.filterDoneTask}
+
                 />
 
               </ScrollView>
 
-            <ButtonAddTask />
+
+            <MenuTask 
+
+            content={this.state.currentTask.task} 
+
+            isVisible={this.state.isModalVisible} 
+
+            onDisappearCallBack={this.hideModal
+            }
+            onDeleteCallback={this.deleteCurrentTask} 
+
+            onChangeStatusCallback={this.changeStatusCurrentTask} 
+
+            />
+
+              
+            <ButtonAddTask 
+            onPressAddTaskCallBack={this.togglePrompt} 
+            />
+
+            <AddTask 
+            promptVisible={this.state.promptVisible} 
+            onHidePromptCallback={this.togglePrompt} 
+            onSubmitCallBack={this.addNewTask}/>
 
         </View>
         

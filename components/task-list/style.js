@@ -7,6 +7,11 @@ const style = StyleSheet.create({
       position: "absolute",
       right:10
     },
+    boutonHeader: {
+      flexDirection:"row",
+      justifyContent:'space-around'
+
+    }
   });
 
 export default style;

@@ -3,12 +3,12 @@ import {Icon} from 'react-native-elements';
 import ActionButton from 'react-native-action-button';
 import { unstable_renderSubtreeIntoContainer } from 'react-dom';
 
-const ButtonAddTask = () => {
+const ButtonAddTask = ({onPressAddTaskCallBack}) => {
     return (
     <ActionButton 
         buttonColor='blue'
         // icon={<Icon color={'white'} name={'add'} />}
-        onPress={()=>onPress()}
+        onPress={()=>onPressAddTaskCallBack()}
         onLongPress={()=>onLongPress()}
 
     />
